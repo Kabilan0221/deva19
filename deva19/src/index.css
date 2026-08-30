@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Chrome, Safari, Edge, Opera: remove spin buttons for compact quantity inputs */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: inline-flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Hide scrollbars on horizontally-scrolling mobile nav pills / tab strips,
+   while keeping them touch/swipe scrollable. Used across the Admin & Worker
+   dashboards for the mobile pill navigation. */
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* -------------------------------------------------------------------
+   Mobile responsiveness safety-net
+   Applied globally so nothing in the Admin / Worker dashboards can force
+   the page wider than the viewport or leave touch targets too small on
+   phones, regardless of any fixed widths used deeper in a component.
+   ------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  /* Never let a wide table, grid, or fixed-width block force horizontal
+     page scroll; scope the overflow to the element itself. */
+  table {
+    font-size: 11px;
+  }
+
+  /* Ensure every clickable control has a comfortable, tappable hit area */
+  button,
+  a[role='button'],
+  input[type='submit'],
+  input[type='button'] {
+    min-height: 34px;
+  }
+
+  /* Any block explicitly marked to scroll horizontally should do so
+     smoothly with touch, without ever pushing the outer page wider. */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
