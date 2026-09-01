@@ -65,7 +65,7 @@ export const CustomerBillsModal: React.FC<CustomerBillsModalProps> = ({
   };
 
   const handleSendWhatsApp = (inv: Invoice) => {
-    const phone = settings?.owner_whatsapp || '918870929100';
+    const phone = settings?.owner_whatsapp || '919894777176';
     const itemsList = inv.items
       .map(
         (it, idx) =>

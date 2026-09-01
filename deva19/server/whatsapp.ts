@@ -144,7 +144,7 @@ export async function sendWhatsAppInvoiceNotification(params: SendWhatsAppParams
   const settings = dbService.getData().settings;
   const token = process.env.WHATSAPP_API_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const ownerPhone = settings.owner_whatsapp || '919842100000';
+  const ownerPhone = settings.owner_whatsapp || '919894777176';
 
   const recipient = params.recipientPhone || ownerPhone;
 

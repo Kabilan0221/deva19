@@ -25,46 +25,16 @@ interface CheckoutModalProps {
   onOrderSuccess: (order: any, invoice: Invoice, whatsappMsg: string, whatsappStatus?: string) => void;
 }
 
-const TN_DISTRICTS = [
-  'Kanchipuram',
-  'Chennai',
-  'Chengalpattu',
-  'Tiruvallur',
-  'Vellore',
-  'Ranipet',
-  'Tirupattur',
-  'Tiruvannamalai',
-  'Villupuram',
-  'Cuddalore',
-  'Salem',
-  'Namakkal',
-  'Dharmapuri',
-  'Krishnagiri',
-  'Coimbatore',
-  'Tiruppur',
-  'Erode',
-  'Nilgiris',
-  'Tiruchirappalli',
-  'Karur',
-  'Perambalur',
-  'Ariyalur',
-  'Thanjavur',
-  'Tiruvarur',
-  'Nagapattinam',
-  'Mayiladuthurai',
-  'Pudukkottai',
-  'Madurai',
-  'Theni',
-  'Dindigul',
-  'Ramanathapuram',
-  'Virudhunagar',
-  'Sivagangai',
-  'Tirunelveli',
-  'Tenkasi',
-  'Thoothukudi',
-  'Kanniyakumari',
-  'Other District',
-];
+const STATE_CITIES: Record<string, string[]> = {
+  'Tamil Nadu': ['Kanchipuram', 'Chennai', 'Chengalpattu', 'Tiruvallur', 'Vellore', 'Ranipet', 'Tirupattur', 'Tiruvannamalai', 'Villupuram', 'Cuddalore', 'Salem', 'Namakkal', 'Dharmapuri', 'Krishnagiri', 'Coimbatore', 'Tiruppur', 'Erode', 'Madurai', 'Dindigul', 'Thanjavur', 'Tiruchirappalli', 'Tirunelveli', 'Thoothukudi', 'Virudhunagar', 'Sivagangai', 'Pudukkottai', 'Other City'],
+  Puducherry: ['Puducherry', 'Karaikal', 'Mahe', 'Yanam', 'Other City'],
+  'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Tirupati', 'Guntur', 'Nellore', 'Kurnool', 'Rajahmundry', 'Kadapa', 'Other City'],
+  Karnataka: ['Bengaluru', 'Mysuru', 'Mangaluru', 'Hubballi', 'Belagavi', 'Tumakuru', 'Shivamogga', 'Ballari', 'Other City'],
+  Kerala: ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur', 'Kollam', 'Alappuzha', 'Kannur', 'Palakkad', 'Other City'],
+  Telangana: ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar', 'Khammam', 'Ramagundam', 'Mahbubnagar', 'Other City'],
+  Maharashtra: ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Aurangabad', 'Thane', 'Kolhapur', 'Solapur', 'Other City'],
+  'Other State': ['Other City'],
+};
 
 const INDIAN_STATES = [
   'Tamil Nadu',
@@ -91,8 +61,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [address, setAddress] = useState('');
   const [area, setArea] = useState('');
   const [state, setState] = useState('Tamil Nadu');
-  const [district, setDistrict] = useState('Kanchipuram');
-  const [customDistrict, setCustomDistrict] = useState('');
+  const [city, setCity] = useState('Kanchipuram');
+  const [customCity, setCustomCity] = useState('');
   const [pincode, setPincode] = useState('631502');
   const [notes, setNotes] = useState('');
 
@@ -131,12 +101,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     }
   }, [mobile]);
 
+  React.useEffect(() => {
+    const cities = STATE_CITIES[state] || ['Other City'];
+    setCity(cities[0]);
+    setCustomCity('');
+  }, [state]);
+
   if (!isOpen) return null;
 
   const totalMrp = items.reduce((sum, item) => sum + item.product.mrp * item.quantity, 0);
   const grandTotal = items.reduce((sum, item) => sum + item.product.selling_price * item.quantity, 0);
   const totalSavings = totalMrp - grandTotal;
-  const minOrderValue = settings?.min_order_value || 500;
+  const minOrderValue =
+    settings?.min_order_by_state?.[state] ?? settings?.min_order_value ?? 500;
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,9 +143,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       return;
     }
 
-    const finalDistrict = district === 'Other District' ? customDistrict.trim() : district;
-    if (!finalDistrict) {
-      setError(language === 'ta' ? 'தயவுசெய்து மாவட்டத்தை தேர்வு செய்க.' : 'Please specify your district.');
+    const finalCity = city === 'Other City' ? customCity.trim() : city;
+    if (!finalCity) {
+      setError(language === 'ta' ? 'தயவுசெய்து நகரத்தை தேர்வு செய்க.' : 'Please specify your city.');
       return;
     }
 
@@ -177,10 +154,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       return;
     }
 
+    if (minOrderValue > 0 && grandTotal < minOrderValue) {
+      setError(
+        language === 'ta'
+          ? `குறைந்தபட்ச ஆர்டர் தொகை ₹${minOrderValue.toLocaleString('en-IN')}. மேலும் ₹${(minOrderValue - grandTotal).toLocaleString('en-IN')} சேர்க்கவும்.`
+          : `Minimum order amount is ₹${minOrderValue.toLocaleString('en-IN')}. Please add ₹${(minOrderValue - grandTotal).toLocaleString('en-IN')} more to your cart.`
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const cleanAddress = address.trim() || `${area.trim() ? area.trim() + ', ' : ''}${finalDistrict}, ${state}${pincode.trim() ? ' - ' + pincode.trim() : ''}`;
+      const cleanAddress = address.trim() || `${area.trim() ? area.trim() + ', ' : ''}${finalCity}, ${state}${pincode.trim() ? ' - ' + pincode.trim() : ''}`;
 
       const orderPayload = {
         customer_name: name.trim(),
@@ -189,9 +175,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         address: cleanAddress,
         delivery_address: cleanAddress,
         area: area.trim() || undefined,
-        city: finalDistrict,
+        city: finalCity,
         state: state,
-        district: finalDistrict,
+        district: finalCity,
         pincode: pincode.trim() || undefined,
         payment_mode: 'CASH' as PaymentMode,
         payment_reference: 'COD_ORDER',
@@ -376,33 +362,30 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                  {t('selectDistrict', language)}
+                  {language === 'ta' ? 'நகரம்' : 'Select City'}
                 </label>
                 <select
-                  value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-600 cursor-pointer"
                 >
-                  {TN_DISTRICTS.map((dist) => (
-                    <option key={dist} value={dist}>
-                      {dist}
-                    </option>
+                  {(STATE_CITIES[state] || ['Other City']).map((cityName) => (
+                    <option key={cityName} value={cityName}>{cityName}</option>
                   ))}
                 </select>
               </div>
             </div>
 
-            {district === 'Other District' && (
+            {city === 'Other City' && (
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                  {language === 'ta' ? 'மாவட்ட பெயரை உள்ளிடவும் *' : 'Enter District / City Name *'}
+                  {language === 'ta' ? 'நகர பெயரை உள்ளிடவும் *' : 'Enter City Name *'}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder=""
-                  value={customDistrict}
-                  onChange={(e) => setCustomDistrict(e.target.value)}
+                  value={customCity}
+                  onChange={(e) => setCustomCity(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
                 />
               </div>

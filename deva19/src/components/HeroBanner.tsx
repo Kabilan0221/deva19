@@ -54,7 +54,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   const activeTheme = THEMES[currentThemeIndex];
 
   const handleWhatsAppOrder = () => {
-    const phone = settings?.owner_whatsapp || '918870929100';
+    const phone = settings?.owner_whatsapp || '919894777176';
     window.open(
       `https://wa.me/${phone}?text=வணக்கம்,%20DJ%20DEVARAJ%20CRACKERS%20(தேவராஜ்%20பட்டாசு%20கடை)%20விலைப்%20பட்டியல்%20மற்றும்%20ஆர்டர்%20செய்ய%20விரும்புகிறேன்.`,
       '_blank'
@@ -147,8 +147,11 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               <Flame className="w-3.5 h-3.5 text-red-500" />
             </div>
 
-            {/* Main Brand Title: Styled for both Tamil and English */}
-            <div className="mb-3">
+            {/* Main Brand Title: Styled for both Tamil and English.
+                Desktop-only now — on mobile the admin-manageable BannerCarousel
+                (rendered above this section) already carries the brand/offer
+                messaging, so this duplicate text block is hidden on small screens. */}
+            <div className="hidden lg:block mb-3">
               {/* English Brand Name */}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight font-['Outfit',sans-serif]">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-red-950 to-gray-900">
@@ -165,6 +168,12 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                   📍 KANCHIPURAM (காஞ்சிபுரம்)
                 </div>
               </div>
+            </div>
+
+            {/* Compact mobile-only brand strip (keeps the shop name visible on
+                small screens without duplicating the full desktop title block) */}
+            <div className="lg:hidden mb-3 text-base font-black text-red-800">
+              DEVARAJ CRACKERS <span className="text-gray-500 font-bold">• தேவராஜ் பட்டாசு கடை</span>
             </div>
 
             {/* Festive Announcement Banner */}

@@ -19,7 +19,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({
   if (!isOpen) return null;
 
   const handleWhatsApp = () => {
-    const phone = settings?.owner_whatsapp || '918870929100';
+    const phone = settings?.owner_whatsapp || '919894777176';
     window.open(
       `https://wa.me/${phone}?text=வணக்கம்,%20தேவராஜ்%20பட்டாசு%20கடை%20(DEVARAJ%20TRADERS)%20பற்றிய%20விவரங்கள்%20அறிய%20விரும்புகிறேன்.`,
       '_blank'

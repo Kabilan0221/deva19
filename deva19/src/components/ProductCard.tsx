@@ -78,9 +78,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
         <div className="pt-2 border-t border-gray-100">
           <div className="flex items-baseline justify-between mb-1">
             <div>
-              <span className="text-xs text-gray-400 line-through mr-2 font-medium">
-                MRP: ₹{product.mrp}
-              </span>
               <span className="text-lg font-black text-gray-900 font-['Outfit',sans-serif]">
                 ₹{product.selling_price}
               </span>

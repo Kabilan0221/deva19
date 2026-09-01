@@ -89,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   const handleWhatsAppChat = () => {
-    const phone = settings?.owner_whatsapp || '918870929100';
+    const phone = settings?.owner_whatsapp || '919894777176';
     window.open(
       `https://wa.me/${phone}?text=வணக்கம்,%20தேவராஜ்%20பட்டாசு%20கடை%20(DEVARAJ%20TRADERS)%20பட்டாசு%20விவரங்கள்%20மற்றும்%20ஆர்டர்%20செய்ய%20விரும்புகிறேன்.`,
       '_blank'

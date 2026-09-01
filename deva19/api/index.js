@@ -1067,6 +1067,12 @@ function getInitialSeedData() {
     gst_number: "33AAACD9981E1Z5",
     invoice_prefix: "DJ-INV-",
     min_order_value: 500,
+    min_order_by_state: {
+      "Tamil Nadu": 3e3,
+      Karnataka: 5e3,
+      "Andhra Pradesh": 5e3,
+      Telangana: 5e3
+    },
     free_delivery_above: 3e3,
     announcement: "\u{1F4A5} DJ DEVARAJ CRACKERS - \u0BA8\u0BC7\u0BB0\u0B9F\u0BBF \u0B9A\u0BBF\u0BB5\u0B95\u0BBE\u0B9A\u0BBF \u0BA4\u0BB0\u0BAE\u0BBE\u0BA9 \u0BAA\u0B9A\u0BC1\u0BAE\u0BC8 \u0BAA\u0B9F\u0BCD\u0B9F\u0BBE\u0B9A\u0BC1\u0B95\u0BB3\u0BCD! 90% \u0B85\u0BA4\u0BBF\u0BB0\u0B9F\u0BBF \u0BA4\u0BB3\u0BCD\u0BB3\u0BC1\u0BAA\u0B9F\u0BBF \u0BB5\u0BBF\u0BB1\u0BCD\u0BAA\u0BA9\u0BC8! \u0B95\u0BBE\u0B9E\u0BCD\u0B9A\u0BBF\u0BAA\u0BC1\u0BB0\u0BAE\u0BCD.",
     bank_name: "State Bank of India - Kanchipuram Branch",

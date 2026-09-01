@@ -3,7 +3,7 @@ import { Product, Category, CartItem, Invoice, StoreSettings } from './types';
 import { apiRequest, getStoredUser, clearAuthSession } from './utils/api';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_SETTINGS } from './data/initialData';
 import { Header } from './components/Header';
-import { HeroBanner } from './components/HeroBanner';
+import { BannerCarousel } from './components/BannerCarousel';
 import { FestiveBackground } from './components/FestiveBackground';
 import { CategorySection } from './components/CategorySection';
 import { ProductCard } from './components/ProductCard';
@@ -285,24 +285,17 @@ export default function App() {
       {/* Main View Router */}
       {currentView === 'store' && (
         <main className="flex-1 relative z-10">
-          {/* Hero Banner with Kanchipuram Outlet & Direct Sivakasi Factory Deals */}
-          <HeroBanner
-            onExploreProducts={() => {
-              const el = document.getElementById('price-list-section');
-              el?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            onExploreGiftBoxes={() => {
-              setSelectedCategory(8); // Gift Boxes Category ID
-              const el = document.getElementById('price-list-section');
-              el?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            onSelectPriceList={() => {
-              const el = document.getElementById('price-list-section');
-              el?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            settings={settings}
-            language={language}
-          />
+          {/* Admin-published moving banners. Hidden on phones so the mobile view stays compact. */}
+          <div className="hidden sm:block">
+            <BannerCarousel
+              banners={(settings?.banners || []).filter((banner) => banner.is_active !== false)}
+              language={language}
+              onExploreProducts={() => {
+                const el = document.getElementById('price-list-section');
+                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            />
+          </div>
 
           {/* Sivamurugan Crackers Style Quick Price List */}
           <div id="price-list-section">
@@ -416,6 +409,7 @@ export default function App() {
         onRemoveItem={handleRemoveCartItem}
         onClearCart={handleClearCart}
         onCheckout={handleOpenCheckout}
+        settings={settings}
       />
 
       {/* Checkout Modal */}

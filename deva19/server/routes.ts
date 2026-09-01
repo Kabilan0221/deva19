@@ -1527,7 +1527,7 @@ apiRouter.post('/invoices/:id/resend-whatsapp', authMiddleware, asyncHandler(asy
 
   const result = await sendWhatsAppInvoiceNotification({
     recipientType: 'OWNER',
-    recipientPhone: db.settings.owner_whatsapp || '919842100000',
+    recipientPhone: db.settings.owner_whatsapp || '919894777176',
     invoiceNumber: invoice.invoice_number,
     invoiceId: invoice.id,
     customerName: invoice.customer_name,
@@ -2033,6 +2033,50 @@ apiRouter.get('/customers/lookup', (req, res) => {
   }
 
   return res.json({ found: false });
+});
+
+// Public customer registration used before price-list/catalog downloads.
+// This lets the Admin Panel recognize customers who download without placing an order.
+apiRouter.post('/customers/register-download', (req, res) => {
+  const name = String(req.body?.name || '').trim();
+  const mobile = String(req.body?.mobile || '').replace(/\D/g, '');
+
+  if (!name) return res.status(400).json({ error: 'Customer name is required' });
+  if (mobile.length !== 10) return res.status(400).json({ error: 'Valid 10-digit mobile number is required' });
+
+  const db = dbService.getData();
+  const now = new Date().toISOString();
+  let customer = db.customers.find((c) => c.mobile.replace(/\D/g, '') === mobile);
+
+  if (!customer) {
+    const id = db.customers.length > 0 ? Math.max(...db.customers.map((c) => c.id)) + 1 : 1;
+    customer = {
+      id,
+      name,
+      mobile,
+      email: '',
+      address: '',
+      area: '',
+      city: '',
+      pincode: '',
+      total_orders: 0,
+      total_purchase: 0,
+      created_at: now,
+      updated_at: now,
+      lead_source: 'PRICE_LIST_DOWNLOAD',
+      last_download_at: now,
+    };
+    db.customers.push(customer);
+  } else {
+    // Keep the latest customer-entered name, but do not alter order totals.
+    if (name && customer.name !== name) customer.name = name;
+    customer.updated_at = now;
+    customer.last_download_at = now;
+    customer.lead_source = customer.lead_source || 'PRICE_LIST_DOWNLOAD';
+  }
+
+  dbService.saveSync();
+  res.json({ success: true, customer });
 });
 
 apiRouter.get('/customers', authMiddleware, (req, res) => {

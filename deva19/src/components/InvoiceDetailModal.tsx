@@ -57,7 +57,7 @@ export const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
   };
 
   const handleSendWhatsApp = () => {
-    const shopPhone = settings?.owner_whatsapp || '918870929100';
+    const shopPhone = settings?.owner_whatsapp || '919894777176';
     const recipientPhone = invoice.customer_mobile ? invoice.customer_mobile.replace(/\D/g, '') : shopPhone;
     const text = buildInvoiceWhatsAppMessage(invoice, settings);
     const encodedText = encodeURIComponent(text);

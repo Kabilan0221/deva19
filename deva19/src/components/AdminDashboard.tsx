@@ -54,7 +54,6 @@ import {
   ArrowRight,
   ShieldCheck,
   Sparkles,
-  Phone,
   RefreshCw,
   Camera,
   Upload,
@@ -101,6 +100,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     | 'categories'
     | 'stock'
     | 'banners'
+    | 'store_settings'
     | 'customers'
     | 'users'
     | 'security'
@@ -126,6 +126,89 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   }, [settings]);
 
+  // Store Settings (Owner editable — Minimum Order Amount & Free Delivery Threshold)
+  const [minOrderValueInput, setMinOrderValueInput] = useState<string>(
+    String(settings?.min_order_value ?? 500)
+  );
+  const [freeDeliveryAboveInput, setFreeDeliveryAboveInput] = useState<string>(
+    String(settings?.free_delivery_above ?? 0)
+  );
+  const STATE_MIN_ORDER_LIST = ['Tamil Nadu', 'Karnataka', 'Andhra Pradesh', 'Telangana'];
+  const [minOrderByStateInput, setMinOrderByStateInput] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    STATE_MIN_ORDER_LIST.forEach((st) => {
+      initial[st] = String(settings?.min_order_by_state?.[st] ?? '');
+    });
+    return initial;
+  });
+
+  // Keep the store settings form in sync when settings prop updates
+  useEffect(() => {
+    if (settings) {
+      setMinOrderValueInput(String(settings.min_order_value ?? 500));
+      setFreeDeliveryAboveInput(String(settings.free_delivery_above ?? 0));
+      setMinOrderByStateInput((prev) => {
+        const next: Record<string, string> = { ...prev };
+        STATE_MIN_ORDER_LIST.forEach((st) => {
+          next[st] = String(settings.min_order_by_state?.[st] ?? prev[st] ?? '');
+        });
+        return next;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings]);
+
+  const handleSaveStoreSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const minOrderValue = parseFloat(minOrderValueInput);
+    const freeDeliveryAbove = parseFloat(freeDeliveryAboveInput);
+
+    if (isNaN(minOrderValue) || minOrderValue < 0) {
+      setActionError('Please enter a valid Minimum Order Amount (0 or more).');
+      setTimeout(() => setActionError(null), 3000);
+      return;
+    }
+    if (isNaN(freeDeliveryAbove) || freeDeliveryAbove < 0) {
+      setActionError('Please enter a valid Free Delivery threshold (0 or more).');
+      setTimeout(() => setActionError(null), 3000);
+      return;
+    }
+
+    const minOrderByState: Record<string, number> = {};
+    for (const st of STATE_MIN_ORDER_LIST) {
+      const raw = minOrderByStateInput[st];
+      if (raw === undefined || raw === '') continue;
+      const val = parseFloat(raw);
+      if (isNaN(val) || val < 0) {
+        setActionError(`Please enter a valid Minimum Order Amount for ${st} (0 or more).`);
+        setTimeout(() => setActionError(null), 3000);
+        return;
+      }
+      minOrderByState[st] = val;
+    }
+
+    try {
+      setLoading(true);
+      const res = await apiRequest<any>('/api/settings', {
+        method: 'PUT',
+        body: JSON.stringify({
+          min_order_value: minOrderValue,
+          min_order_by_state: minOrderByState,
+          free_delivery_above: freeDeliveryAbove,
+        }),
+      });
+      if (res) {
+        setActionSuccess('Store settings updated! குறைந்தபட்ச ஆர்டர் தொகை புதுப்பிக்கப்பட்டது.');
+        setTimeout(() => setActionSuccess(null), 3000);
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to update store settings');
+      setTimeout(() => setActionError(null), 3000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Login form state (if not logged in)
   const [adminLoginMode, setAdminLoginMode] = useState<'login' | 'forgot'>('login');
   const [loginUsername, setLoginUsername] = useState('');
@@ -135,15 +218,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginSuccessMsg, setLoginSuccessMsg] = useState<string | null>(null);
 
-  // Forgot Password States in Admin Dashboard
-  const [adminForgotStep, setAdminForgotStep] = useState<1 | 2>(1);
+  // Forgot Password States in Admin Dashboard (Recovery Key based — no OTP/SMS)
   const [adminForgotIdentifier, setAdminForgotIdentifier] = useState('owner');
-  const [adminForgotOtp, setAdminForgotOtp] = useState('');
+  const [adminRecoveryKey, setAdminRecoveryKey] = useState('');
+  const [showAdminRecoveryKey, setShowAdminRecoveryKey] = useState(false);
   const [adminNewPassword, setAdminNewPassword] = useState('');
   const [adminConfirmPassword, setAdminConfirmPassword] = useState('');
   const [showAdminNewPassword, setShowAdminNewPassword] = useState(false);
-  const [adminMaskedMobile, setAdminMaskedMobile] = useState('');
-  const [adminDevOtpHint, setAdminDevOtpHint] = useState<string | null>(null);
 
   // Data states
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
@@ -332,43 +413,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  // Forgot password request OTP (Step 1)
-  const handleAdminRequestForgotOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError(null);
-    setLoginSuccessMsg(null);
-    setLoginLoading(true);
-
-    try {
-      const res = await apiRequest<{
-        success: boolean;
-        message: string;
-        maskedMobile: string;
-        username: string;
-        otp_for_dev?: string;
-      }>('/api/auth/forgot-password/request-otp', {
-        method: 'POST',
-        body: JSON.stringify({ identifier: adminForgotIdentifier.trim() }),
-      });
-
-      if (res && res.success) {
-        setAdminMaskedMobile(res.maskedMobile);
-        if (res.otp_for_dev) {
-          setAdminDevOtpHint(res.otp_for_dev);
-          setAdminForgotOtp(res.otp_for_dev);
-        }
-        setLoginSuccessMsg(`Security OTP sent via SMS to registered mobile (${res.maskedMobile})!`);
-        setAdminForgotStep(2);
-      }
-    } catch (err: any) {
-      setLoginError(err.message || 'Failed to request OTP. Please verify your username or registered mobile.');
-    } finally {
-      setLoginLoading(false);
-    }
-  };
-
-  // Forgot password verify OTP & reset (Step 2)
-  const handleAdminResetPassword = async (e: React.FormEvent) => {
+  // Forgot password: Recovery Key reset (no OTP/SMS involved at all)
+  const handleAdminRecoveryKeyReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
     setLoginSuccessMsg(null);
@@ -383,8 +429,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       return;
     }
 
-    if (!adminForgotOtp.trim()) {
-      setLoginError('Please enter the 6-digit verification OTP sent to your mobile.');
+    if (!adminRecoveryKey.trim()) {
+      setLoginError('Please enter the Recovery Key.');
       return;
     }
 
@@ -396,11 +442,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         message: string;
         token: string;
         user: any;
-      }>('/api/auth/forgot-password/verify-and-reset', {
+      }>('/api/auth/forgot-password/recovery-key-reset', {
         method: 'POST',
         body: JSON.stringify({
           identifier: adminForgotIdentifier.trim(),
-          otp: adminForgotOtp.trim(),
+          recovery_key: adminRecoveryKey.trim(),
           new_password: adminNewPassword,
         }),
       });
@@ -413,7 +459,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         }, 1000);
       }
     } catch (err: any) {
-      setLoginError(err.message || 'Password reset failed. Please check the OTP and try again.');
+      setLoginError(err.message || 'Password reset failed. Please check the Recovery Key and try again.');
     } finally {
       setLoginLoading(false);
     }
@@ -423,11 +469,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setAdminLoginMode('login');
     setLoginError(null);
     setLoginSuccessMsg(null);
-    setAdminForgotStep(1);
-    setAdminForgotOtp('');
+    setAdminRecoveryKey('');
     setAdminNewPassword('');
     setAdminConfirmPassword('');
-    setAdminDevOtpHint(null);
   };
 
   // Product Add / Edit Handler
@@ -929,7 +973,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         setAdminLoginMode('forgot');
                         setLoginError(null);
                         setLoginSuccessMsg(null);
-                        setAdminForgotStep(1);
                         if (loginUsername) setAdminForgotIdentifier(loginUsername);
                       }}
                       className="text-xs font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer"
@@ -1032,157 +1075,127 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               )}
 
-              {adminForgotStep === 1 ? (
-                <form onSubmit={handleAdminRequestForgotOtp} className="space-y-4">
-                  <div className="p-3.5 bg-red-50 border border-red-100 rounded-2xl text-xs text-red-800 space-y-1">
-                    <p className="font-bold flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5" />
-                      Owner & Staff OTP Verification
-                    </p>
-                    <p className="text-gray-600">
-                      Enter your username or registered mobile number to receive a secure 6-digit OTP via SMS.
-                    </p>
-                  </div>
+              <form onSubmit={handleAdminRecoveryKeyReset} className="space-y-4">
+                <div className="p-3.5 bg-emerald-50 border border-emerald-100 rounded-2xl text-xs text-emerald-950 space-y-1">
+                  <p className="font-bold text-emerald-900 flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5" />
+                    Instant Reset with Recovery Key
+                  </p>
+                  <p className="text-gray-600">
+                    No OTP or SMS needed. Enter the secret <strong>Recovery Key</strong> (set as <code className="bg-white px-1 rounded border border-emerald-200">ADMIN_RECOVERY_KEY</code> on the server) to reset the password directly.
+                  </p>
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                      Username or Mobile / பயனர் பெயர் அல்லது கைபேசி
-                    </label>
-                    <input
-                      type="text"
-                      value={adminForgotIdentifier}
-                      onChange={(e) => setAdminForgotIdentifier(e.target.value)}
-                      placeholder=""
-                      required
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    Username or Mobile / பயனர் பெயர் அல்லது கைபேசி
+                  </label>
+                  <input
+                    type="text"
+                    value={adminForgotIdentifier}
+                    onChange={(e) => setAdminForgotIdentifier(e.target.value)}
+                    placeholder=""
+                    required
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  />
+                </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setAdminForgotIdentifier('owner')}
-                      className={`text-xs px-2.5 py-1.5 rounded-lg font-bold cursor-pointer transition-colors border ${
-                        adminForgotIdentifier === 'owner' || adminForgotIdentifier === 'admin'
-                          ? 'bg-red-700 text-white border-red-800 shadow-xs'
-                          : 'bg-red-50 hover:bg-red-100 text-red-900 border-red-200'
-                      }`}
-                    >
-                      👑 Owner (owner)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAdminForgotIdentifier('8870929100')}
-                      className={`text-xs px-2.5 py-1.5 rounded-lg font-bold cursor-pointer transition-colors border ${
-                        adminForgotIdentifier === '8870929100'
-                          ? 'bg-red-700 text-white border-red-800 shadow-xs'
-                          : 'bg-red-50 hover:bg-red-100 text-red-900 border-red-200'
-                      }`}
-                    >
-                      📱 98947 77176
-                    </button>
-                  </div>
-
+                <div className="flex flex-wrap gap-2">
                   <button
-                    type="submit"
-                    disabled={loginLoading || !adminForgotIdentifier.trim()}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 rounded-xl text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                    type="button"
+                    onClick={() => setAdminForgotIdentifier('owner')}
+                    className={`text-xs px-2.5 py-1.5 rounded-lg font-bold cursor-pointer transition-colors border ${
+                      adminForgotIdentifier === 'owner' || adminForgotIdentifier === 'admin'
+                        ? 'bg-emerald-700 text-white border-emerald-800 shadow-xs'
+                        : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200'
+                    }`}
                   >
-                    {loginLoading ? 'Sending OTP...' : 'Send Verification OTP'}
+                    👑 Owner (owner)
                   </button>
-                </form>
-              ) : (
-                <form onSubmit={handleAdminResetPassword} className="space-y-4">
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900">
-                    <p className="font-bold">Enter 6-digit OTP</p>
-                    <p className="text-amber-700 mt-0.5">
-                      Sent to registered mobile <span className="font-mono font-bold">{adminMaskedMobile}</span>
-                    </p>
-                    {adminDevOtpHint && (
-                      <div className="mt-2 pt-2 border-t border-amber-200 flex items-center justify-between">
-                        <span className="font-mono font-black text-amber-900">OTP Code: {adminDevOtpHint}</span>
-                        <button
-                          type="button"
-                          onClick={() => setAdminForgotOtp(adminDevOtpHint)}
-                          className="text-[11px] bg-amber-200 hover:bg-amber-300 text-amber-900 px-2 py-0.5 rounded font-bold cursor-pointer"
-                        >
-                          Auto Fill
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAdminForgotIdentifier('8870929100')}
+                    className={`text-xs px-2.5 py-1.5 rounded-lg font-bold cursor-pointer transition-colors border ${
+                      adminForgotIdentifier === '8870929100'
+                        ? 'bg-emerald-700 text-white border-emerald-800 shadow-xs'
+                        : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200'
+                    }`}
+                  >
+                    📱 98947 77176
+                  </button>
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                      6-Digit OTP / ஓடிபி குறியீடு
-                    </label>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    Recovery Key
+                  </label>
+                  <div className="relative">
                     <input
-                      type="text"
-                      maxLength={6}
-                      value={adminForgotOtp}
-                      onChange={(e) => setAdminForgotOtp(e.target.value.replace(/\D/g, ''))}
-                      placeholder=""
+                      type={showAdminRecoveryKey ? 'text' : 'password'}
+                      value={adminRecoveryKey}
+                      onChange={(e) => setAdminRecoveryKey(e.target.value)}
+                      placeholder="Enter the secret recovery key"
                       required
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-center text-lg font-mono font-black tracking-widest focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                      className="w-full px-3.5 py-2.5 pr-10 bg-gray-50 border border-gray-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600"
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                      New Password / புதிய கடவுச்சொல்
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showAdminNewPassword ? 'text' : 'password'}
-                        value={adminNewPassword}
-                        onChange={(e) => setAdminNewPassword(e.target.value)}
-                        placeholder=""
-                        required
-                        className="w-full px-3.5 py-2.5 pr-10 bg-gray-50 border border-gray-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowAdminNewPassword(!showAdminNewPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
-                      >
-                        {showAdminNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                      Confirm New Password / கடவுச்சொல்லை உறுதிசெய்
-                    </label>
-                    <input
-                      type="password"
-                      value={adminConfirmPassword}
-                      onChange={(e) => setAdminConfirmPassword(e.target.value)}
-                      placeholder=""
-                      required
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
-                    />
-                  </div>
-
-                  <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => setAdminForgotStep(1)}
-                      className="w-1/3 border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-3 rounded-xl text-xs transition-colors cursor-pointer"
+                      onClick={() => setShowAdminRecoveryKey(!showAdminRecoveryKey)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                     >
-                      Back
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={loginLoading}
-                      className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 rounded-xl text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                      {loginLoading ? 'Updating...' : 'Set New Password'}
+                      {showAdminRecoveryKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                </form>
-              )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    New Password / புதிய கடவுச்சொல்
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showAdminNewPassword ? 'text' : 'password'}
+                      value={adminNewPassword}
+                      onChange={(e) => setAdminNewPassword(e.target.value)}
+                      placeholder=""
+                      required
+                      minLength={6}
+                      className="w-full px-3.5 py-2.5 pr-10 bg-gray-50 border border-gray-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowAdminNewPassword(!showAdminNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                    >
+                      {showAdminNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    Confirm New Password / கடவுச்சொல்லை உறுதிசெய்
+                  </label>
+                  <input
+                    type="password"
+                    value={adminConfirmPassword}
+                    onChange={(e) => setAdminConfirmPassword(e.target.value)}
+                    placeholder=""
+                    required
+                    minLength={6}
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loginLoading}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  {loginLoading ? 'Updating...' : 'Reset Password & Sign In'}
+                </button>
+              </form>
             </div>
           )}
         </div>
@@ -1328,6 +1341,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               >
                 <ImageIcon className="w-3.5 h-3.5" />
                 <span>Home Banners</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('store_settings')}
+                className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  activeTab === 'store_settings' ? 'bg-amber-600 text-white shadow-xs' : 'bg-slate-800 text-amber-300'
+                }`}
+              >
+                <Settings className="w-3.5 h-3.5" />
+                <span>Store Settings</span>
               </button>
 
               <button
@@ -1478,6 +1501,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 >
                   <ImageIcon className="w-4 h-4 text-amber-400" />
                   <span>Home Banner Slider (பேனர்கள்)</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('store_settings')}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all cursor-pointer ${
+                    activeTab === 'store_settings' ? 'bg-amber-600 text-white font-bold' : 'text-amber-300 hover:bg-slate-800'
+                  }`}
+                >
+                  <Settings className="w-4 h-4 text-amber-400" />
+                  <span>Store Settings (குறைந்தபட்ச ஆர்டர்)</span>
                 </button>
 
                 <button
@@ -2851,7 +2884,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 Customer Records & Purchase History (வாடிக்கையாளர்கள்)
               </h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                Directory of customer mobile numbers, total purchases, and last order dates.
+                Directory of customer mobile numbers, purchase history, and price-list/catalog download leads.
               </p>
             </div>
 
@@ -2865,7 +2898,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <th className="p-3">Address</th>
                       <th className="p-3 text-center">Orders Count</th>
                       <th className="p-3 text-right">Total Purchase Value</th>
-                      <th className="p-3">Last Order Date</th>
+                      <th className="p-3">Last Activity</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -2886,7 +2919,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             ₹{c.total_purchase.toLocaleString('en-IN')}
                           </td>
                           <td className="p-3 text-gray-400">
-                            {new Date(c.last_order_date).toLocaleDateString('en-IN')}
+                            {c.last_order_date ? new Date(c.last_order_date).toLocaleDateString('en-IN') : c.last_download_at ? new Date(c.last_download_at).toLocaleDateString('en-IN') : '—'}
                           </td>
                         </tr>
                       ))
@@ -3150,6 +3183,98 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* STORE SETTINGS — Minimum Order Amount & Free Delivery Threshold */}
+        {activeTab === 'store_settings' && (
+          <div className="space-y-6">
+            <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
+              <h2 className="text-xl font-extrabold text-gray-900 font-['Outfit',sans-serif] flex items-center gap-2">
+                <Settings className="w-5 h-5 text-amber-600" />
+                <span>Store Settings (கடை அமைப்புகள்)</span>
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Control the minimum cart value required for customers to check out, and the free-delivery threshold shown across the site.
+              </p>
+            </div>
+
+            <form
+              onSubmit={handleSaveStoreSettings}
+              className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-5 max-w-xl"
+            >
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                  Minimum Order Amount (குறைந்தபட்ச ஆர்டர் தொகை) — ₹
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={minOrderValueInput}
+                  onChange={(e) => setMinOrderValueInput(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold text-gray-900"
+                  placeholder="500"
+                />
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Customers whose cart total is below this amount will see a warning in the Cart and won't be able to proceed to checkout. This is the fallback used for any state below that doesn't have its own amount set.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                  Minimum Order Amount by State (மாநிலம் வாரியாக) — ₹
+                </label>
+                <p className="text-[11px] text-gray-400 mb-2">
+                  Set a different minimum order amount per delivery state, shown and enforced at checkout based on what the customer selects. Leave a field blank to fall back to the general amount above.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {STATE_MIN_ORDER_LIST.map((st) => (
+                    <div key={st}>
+                      <label className="block text-[11px] font-bold text-gray-500 mb-1">{st}</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={minOrderByStateInput[st] ?? ''}
+                        onChange={(e) =>
+                          setMinOrderByStateInput((prev) => ({ ...prev, [st]: e.target.value }))
+                        }
+                        className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold text-gray-900"
+                        placeholder={String(settings?.min_order_value ?? 500)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                  Free Delivery Above (இலவச டெலிவரி வரம்பு) — ₹
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={freeDeliveryAboveInput}
+                  onChange={(e) => setFreeDeliveryAboveInput(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold text-gray-900"
+                  placeholder="0"
+                />
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Set to 0 to disable the free-delivery message.
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-extrabold py-3 rounded-xl text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{loading ? 'Saving...' : 'Save Store Settings'}</span>
+              </button>
+            </form>
           </div>
         )}
 
