@@ -26,14 +26,62 @@ interface CheckoutModalProps {
 }
 
 const STATE_CITIES: Record<string, string[]> = {
-  'Tamil Nadu': ['Kanchipuram', 'Chennai', 'Chengalpattu', 'Tiruvallur', 'Vellore', 'Ranipet', 'Tirupattur', 'Tiruvannamalai', 'Villupuram', 'Cuddalore', 'Salem', 'Namakkal', 'Dharmapuri', 'Krishnagiri', 'Coimbatore', 'Tiruppur', 'Erode', 'Madurai', 'Dindigul', 'Thanjavur', 'Tiruchirappalli', 'Tirunelveli', 'Thoothukudi', 'Virudhunagar', 'Sivagangai', 'Pudukkottai', 'Other City'],
-  Puducherry: ['Puducherry', 'Karaikal', 'Mahe', 'Yanam', 'Other City'],
-  'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Tirupati', 'Guntur', 'Nellore', 'Kurnool', 'Rajahmundry', 'Kadapa', 'Other City'],
-  Karnataka: ['Bengaluru', 'Mysuru', 'Mangaluru', 'Hubballi', 'Belagavi', 'Tumakuru', 'Shivamogga', 'Ballari', 'Other City'],
-  Kerala: ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur', 'Kollam', 'Alappuzha', 'Kannur', 'Palakkad', 'Other City'],
-  Telangana: ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar', 'Khammam', 'Ramagundam', 'Mahbubnagar', 'Other City'],
-  Maharashtra: ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Aurangabad', 'Thane', 'Kolhapur', 'Solapur', 'Other City'],
-  'Other State': ['Other City'],
+  'Tamil Nadu': [
+    'Achampudur', 'Acharapakkam', 'Alandur', 'Alanganallur', 'Alangayam', 'Alangudi', 'Alangulam',
+    'Alathur', 'Alwarkurichi', 'Alwarthirunagari', 'Ambasamudram', 'Ambattur', 'Ambur', 'Anaimalai',
+    'Andimadam', 'Andipatti', 'Annur', 'Arakkonam', 'Aralvaimozhi', 'Arani', 'Aranthangi',
+    'Aravakurichi', 'Arcot', 'Ariyalur', 'Arumbavur', 'Aruppukkottai', 'Attur', 'Authoor',
+    'Avadi', 'Avinashi', 'Avudaiyarkoil', 'Ayikudi', 'B.Mallapuram', 'Bargur', 'Batlagundu',
+    'Bhavani', 'Bhuvanagiri', 'Bodinayakanur', 'Boothapandi', 'Chengalpattu', 'Chengam', 'Chennai',
+    'Chennimalai', 'Cheranmahadevi', 'Chettinad', 'Cheyyar', 'Chidambaram', 'Chinnalapatti', 'Chinnamanur',
+    'Chinnasalem', 'Chitlapakkam', 'Chromepet', 'Coimbatore', 'Colachel', 'Coonoor', 'Cuddalore',
+    'Cumbum', 'Denkanikottai', 'Devakottai', 'Dharapuram', 'Dharmapuri', 'Dindigul', 'Edappadi',
+    'Eral', 'Erode', 'Ettayapuram', 'Gandarvakottai', 'Gangavalli', 'Gingee', 'Gobichettipalayam',
+    'Gudalur', 'Gudiyatham', 'Gummidipoondi', 'Harur', 'Hosur', 'Ilayangudi', 'Iluppur',
+    'Jayankondam', 'Kadayanallur', 'Kalakkad', 'Kalasapakkam', 'Kalayarkoil', 'Kallakurichi', 'Kallupatti',
+    'Kanadukathan', 'Kanchipuram', 'Kandamangalam', 'Kangeyam', 'Kanniyakumari', 'Kanyakumari', 'Karaikudi',
+    'Karamadai', 'Karambakudi', 'Kariapatti', 'Karimangalam', 'Karumathampatti', 'Karungal', 'Karur',
+    'Katpadi', 'Kattumannarkoil', 'Kaveripakkam', 'Kaveripattinam', 'Kayalpattinam', 'Keelapavoor', 'Keeranur',
+    'Kelamangalam', 'Ketti', 'Killai', 'Kilpennathur', 'Kilvelur', 'Kinathukadavu', 'Kodaikanal',
+    'Kodumudi', 'Komarapalayam', 'Kothamangalam', 'Kottaiyur', 'Kovilpatti', 'Krishnagiri', 'Krishnarayapuram',
+    'Kulasekaram', 'Kulathur', 'Kulithalai', 'Kumarapalayam', 'Kumbakonam', 'Kundrathur', 'Kunnam',
+    'Kurinjipadi', 'Kuthalam', 'Kuzhithurai', 'Labbaikudikadu', 'Lalgudi', 'Madukkarai', 'Madurai',
+    'Madurantakam', 'Manali', 'Manali New Town', 'Manamadurai', 'Manamelkudi', 'Mangadu', 'Manmangalam',
+    'Mannargudi', 'Maraimalai Nagar', 'Marakkanam', 'Marthandam', 'Mayiladuthurai', 'Melagaram', 'Melapalayam',
+    'Melur', 'Melvisharam', 'Mettupalayam', 'Mettur', 'Modakurichi', 'Mohanur', 'Moolakaraipatti',
+    'Mudhalur', 'Mudukulathur', 'Mulanur', 'Musiri', 'Mylapore', 'Nagapattinam', 'Nagercoil',
+    'Nallampalli', 'Namakkal', 'Nambiyur', 'Nanguneri', 'Narasingapuram', 'Natham', 'Natrampalli',
+    'Nattarasankottai', 'Neyveli', 'Nilakkottai', 'Oddanchatram', 'Omalur', 'Ooty', 'Orathanadu',
+    'Padmanabhapuram', 'Palacode', 'Palani', 'Palayamkottai', 'Palladam', 'Pallapatti', 'Pallavaram',
+    'Pammal', 'Panagudi', 'Panruti', 'Pappireddipatti', 'Paramakudi', 'Paramathi', 'Parangipettai',
+    'Pattukkottai', 'Pazhavoor', 'Pennadam', 'Pennagaram', 'Peraiyur', 'Perambalur', 'Peravurani',
+    'Periyakulam', 'Pernambut', 'Perundurai', 'Perungalur', 'Perungudi', 'Pollachi', 'Polur',
+    'Ponnamaravathi', 'Ponneri', 'Poolambadi', 'Poonamallee', 'Pudukkottai', 'Pudukottai', 'Pugalur',
+    'Puliangudi', 'Puliyankudi', 'Radhapuram', 'Rajakkamangalam', 'Rajapalayam', 'Ramanathapuram', 'Rameswaram',
+    'Ranipet', 'Rasipuram', 'Red Hills', 'Reddiyarpatti', 'Salem', 'Samayanallur', 'Sankagiri',
+    'Sankarankovil', 'Sankarapuram', 'Sankari', 'Sathyamangalam', 'Sattur', 'Sendamangalam', 'Sendurai',
+    'Sengottai', 'Sethiathoppu', 'Shencottai', 'Shenkottai', 'Sholavandan', 'Sholinghur', 'Singampunari',
+    'Sirkali', 'Sivaganga', 'Sivakasi', 'Srimushnam', 'Sriperumbudur', 'Srivaikuntam', 'Srivilliputhur',
+    'Suchindram', 'Sulur', 'Surandai', 'Tambaram', 'Tenkasi', 'Thammampatti', 'Thanjavur',
+    'Tharamangalam', 'Tharangambadi', 'Theni', 'Thenkasi', 'Thirumangalam', 'Thirumayam', 'Thiruneermalai',
+    'Thiruthuraipoondi', 'Thiruvaiyaru', 'Thiruvallur', 'Thiruvannamalai', 'Thiruvarur', 'Thiruvattar', 'Thiruvithancode',
+    'Thiruvonam', 'Thiruvottiyur', 'Thoothukudi', 'Thuckalay', 'Thuraiyur', 'Tindivanam', 'Tiruchendur',
+    'Tiruchengode', 'Tiruchirappalli', 'Tiruchuli', 'Tirukalukundram', 'Tirumangalam', 'Tirunelveli', 'Tirupathur',
+    'Tirupattur', 'Tiruppur', 'Tiruppuvanam', 'Tiruttani', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvottiyur',
+    'Trichy', 'Udayarpalayam', 'Udumalaipettai', 'Ulundurpet', 'Usilampatti', 'Uthamapalayam', 'Uthangarai',
+    'Uthiramerur', 'Uthukottai', 'Vadakarai', 'Vadipatti', 'Valangaiman', 'Valliyur', 'Valparai',
+    'Vandavasi', 'Vaniyambadi', 'Vanur', 'Varadarajanpettai', 'Vasudevanallur', 'Vazhapadi', 'Vedaranyam',
+    'Vedasandur', 'Vellakoil', 'Velliyanai', 'Vellore', 'Velur', 'Vembakottai', 'Veppampattu',
+    'Veppankulam', 'Veppanthattai', 'Veppur', 'Vikravandi', 'Vilathikulam', 'Villupuram', 'Viralimalai',
+    'Virudhachalam', 'Virudhunagar', 'Walajapet', 'Watrap', 'Yercaud', 'Zamin Uthukuli', 'Other City',
+  ],
+  Puducherry: ['Puducherry', 'Karaikal', 'Mahe', 'Yanam'],
+  'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Tirupati', 'Guntur', 'Nellore', 'Kurnool', 'Rajahmundry', 'Kadapa', 'Anantapur', 'Eluru', 'Ongole', 'Srikakulam', 'Other City'],
+  Karnataka: ['Bengaluru', 'Mysuru', 'Mangaluru', 'Hubballi', 'Belagavi', 'Tumakuru', 'Shivamogga', 'Ballari', 'Davangere', 'Kalaburagi', 'Udupi', 'Hassan', 'Other City'],
+  Kerala: ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur', 'Kollam', 'Alappuzha', 'Kannur', 'Palakkad', 'Kottayam', 'Malappuram', 'Other City'],
+  Telangana: ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar', 'Khammam', 'Ramagundam', 'Mahbubnagar', 'Adilabad', 'Siddipet', 'Other City'],
+  Maharashtra: ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Thane', 'Kolhapur', 'Solapur', 'Aurangabad', 'Navi Mumbai', 'Amravati', 'Sangli', 'Other City'],
+  'Other State': [],
 };
 
 const INDIAN_STATES = [
@@ -102,8 +150,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   }, [mobile]);
 
   React.useEffect(() => {
-    const cities = STATE_CITIES[state] || ['Other City'];
-    setCity(cities[0]);
+    const cities = STATE_CITIES[state] || [];
+    setCity(cities[0] || '');
     setCustomCity('');
   }, [state]);
 
@@ -143,7 +191,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       return;
     }
 
-    const finalCity = city === 'Other City' ? customCity.trim() : city;
+    const finalCity = city.trim() || customCity.trim();
     if (!finalCity) {
       setError(language === 'ta' ? 'தயவுசெய்து நகரத்தை தேர்வு செய்க.' : 'Please specify your city.');
       return;
@@ -177,7 +225,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         area: area.trim() || undefined,
         city: finalCity,
         state: state,
-        district: finalCity,
         pincode: pincode.trim() || undefined,
         payment_mode: 'CASH' as PaymentMode,
         payment_reference: 'COD_ORDER',
@@ -362,34 +409,27 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                  {language === 'ta' ? 'நகரம்' : 'Select City'}
-                </label>
-                <select
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-600 cursor-pointer"
-                >
-                  {(STATE_CITIES[state] || ['Other City']).map((cityName) => (
-                    <option key={cityName} value={cityName}>{cityName}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {city === 'Other City' && (
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  {language === 'ta' ? 'நகர பெயரை உள்ளிடவும் *' : 'Enter City Name *'}
+                  {language === 'ta' ? 'நகரம்' : 'City'}
                 </label>
                 <input
                   type="text"
                   required
-                  value={customCity}
-                  onChange={(e) => setCustomCity(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                  list="delivery-city-options"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder={language === 'ta' ? 'நகரத்தை தேர்வு செய்யவும் / type செய்து தேடவும்' : 'Select or type city'}
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-600"
                 />
+                <datalist id="delivery-city-options">
+                  {(STATE_CITIES[state] || []).map((cityName) => (
+                    <option key={cityName} value={cityName} />
+                  ))}
+                </datalist>
+                <p className="text-[9px] text-gray-400 mt-1">
+                  {language === 'ta' ? 'பட்டியலில் இல்லாத நகரத்தையும் நேரடியாக type செய்யலாம்.' : 'You can type any city not shown in the suggestions.'}
+                </p>
               </div>
-            )}
+            </div>
 
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">

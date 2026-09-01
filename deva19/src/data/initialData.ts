@@ -1,9 +1,9 @@
 import { Category, Product, StoreSettings } from '../types';
 
 export const INITIAL_SETTINGS: StoreSettings = {
-  shop_name: 'DJ DEVARAJ CRACKERS (தேவராஜ் பட்டாசு கடை)',
+  shop_name: 'DEVARAJ CRACKERS (தேவராஜ் பட்டாசு கடை)',
   shop_tamil_name: 'தேவராஜ் பட்டாசு கடை',
-  shop_english_name: 'DJ DEVARAJ CRACKERS',
+  shop_english_name: 'DEVARAJ CRACKERS',
   proprietor_name: 'R.S.கோபிநாத் (R.S. Gopinath)',
   tagline: 'எங்களிடம் அனைத்து சுபநிகழ்ச்சிகளுக்கும் மொத்தமாகவும் சில்லரையாகவும் பட்டாசுகள் கிடைக்கும்!',
   address: 'நெ.27, கீழ்கதிர்பூர் புதிய பைபாஸ், நயாரா பெட்ரோல் பங்க் எதிரில், காஞ்சிபுரம் - 631 502.',
@@ -23,7 +23,7 @@ export const INITIAL_SETTINGS: StoreSettings = {
     Telangana: 5000,
   },
   free_delivery_above: 5000,
-  announcement: '💥 DJ DEVARAJ CRACKERS - நேரடி சிவகாசி தரமான பசுமை பட்டாசுகள்! 90% அதிரடி தள்ளுபடி விற்பனை!',
+  announcement: '💥 DEVARAJ CRACKERS - நேரடி சிவகாசி தரமான பசுமை பட்டாசுகள்! 90% அதிரடி தள்ளுபடி விற்பனை!',
   bank_name: 'State Bank of India',
   bank_upi_id: '8870929100@okbizaxis',
   bank_account_no: '30492817492',
@@ -31,8 +31,8 @@ export const INITIAL_SETTINGS: StoreSettings = {
   banners: [
     {
       id: 'banner-1',
-      title: 'DJ DEVARAJ CRACKERS - Grand Diwali Mega Mela',
-      tamil_title: 'DJ DEVARAJ CRACKERS - தீபாவளி அதிரடி தள்ளுபடி விற்பனை!',
+      title: 'DEVARAJ CRACKERS - Grand Diwali Mega Mela',
+      tamil_title: 'DEVARAJ CRACKERS - தீபாவளி அதிரடி தள்ளுபடி விற்பனை!',
       subtitle: 'Direct Sivakasi Factory Fresh Crackers with up to 90% discount on all varieties.',
       tamil_subtitle: 'சிவகாசி நேரடி தொழிற்சாலை விலையில் 90% வரை தள்ளுபடி! மொத்தமாகவும் சில்லரையாகவும் கிடைக்கும்.',
       image_url: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1400&q=80',

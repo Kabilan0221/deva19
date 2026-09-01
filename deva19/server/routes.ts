@@ -1019,12 +1019,11 @@ apiRouter.post('/orders', asyncHandler(async (req, res) => {
   const customer_name = (req.body.customer_name || req.body.name || '').trim();
   const customer_mobile = (req.body.customer_mobile || req.body.mobile || '').replace(/\D/g, '');
   const customer_email = (req.body.customer_email || req.body.email || '').trim();
-  const district = (req.body.district || req.body.city || 'Kanchipuram').trim();
-  const city = (req.body.city || district).trim();
+  const city = (req.body.city || 'Kanchipuram').trim();
   const state = (req.body.state || 'Tamil Nadu').trim();
   const area = (req.body.area || '').trim();
   const pincode = (req.body.pincode || '').trim();
-  const address = (req.body.address || req.body.delivery_address || `${area ? area + ', ' : ''}${district}, ${state}`).trim();
+  const address = (req.body.address || req.body.delivery_address || `${area ? area + ', ' : ''}${city}, ${state}`).trim();
   const notes = (req.body.notes || '').trim();
   const payment_mode = req.body.payment_mode || 'CASH';
   const transaction_ref = req.body.transaction_ref || req.body.payment_reference || '';
@@ -1109,7 +1108,7 @@ apiRouter.post('/orders', asyncHandler(async (req, res) => {
 
   // 4. Find or Create Customer
   let customer = db.customers.find((c) => c.mobile.replace(/\D/g, '') === customer_mobile.replace(/\D/g, ''));
-  const effectiveCity = district || city || 'Kanchipuram';
+  const effectiveCity = city || 'Kanchipuram';
   const effectiveState = state || 'Tamil Nadu';
   const fullAddress = `${address.trim()}${area ? ', ' + area.trim() : ''}, ${effectiveCity}, ${effectiveState}${pincode ? ' - ' + pincode.trim() : ''}`;
 
@@ -1351,9 +1350,14 @@ apiRouter.post('/billing', authMiddleware, asyncHandler(async (req, res) => {
       };
       db.customers.push(customer);
     } else {
+      // Manual/POS bills with a real mobile number are part of the same
+      // customer history used by the public Track My Bill screen.
       customer.total_orders += 1;
       customer.total_purchase += grandTotal;
       customer.last_order_date = now;
+      customer.updated_at = now;
+      customer.lead_source = 'ORDER';
+      if (custName && custName !== 'Counter Walk-in Customer') customer.name = custName;
       customerId = customer.id;
     }
   }

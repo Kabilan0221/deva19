@@ -1,7 +1,7 @@
 import { Invoice, StoreSettings } from '../types';
 
 export function printThermalReceipt(invoice: Invoice, settings?: StoreSettings | null) {
-  const shopName = settings?.shop_name || 'தேவராஜ் பட்டாசு கடை // DEVARAJ TRADERS';
+  const shopName = settings?.shop_name || 'தேவராஜ் பட்டாசு கடை // DEVARAJ CRACKERS';
   const address = settings?.address || 'நெ.27, கீழ்கதிர்பூர் புதிய பைபாஸ், நயாரா பெட்ரோல் பங்க் எதிரில்';
   const city = `${settings?.city || 'காஞ்சிபுரம்'} - ${settings?.pincode || '631502'}`;
   const phone = settings?.contact_number || '+91 98947 77176 / 94444 15380';
@@ -21,6 +21,7 @@ export function printThermalReceipt(invoice: Invoice, settings?: StoreSettings |
       (item) => `
       <tr>
         <td style="text-align:left; padding: 4px 0; font-size: 11px; word-break: break-word;">${item.product_name}</td>
+        <td style="text-align:right; padding: 4px 0; font-size: 11px;">₹${item.mrp}</td>
         <td style="text-align:center; padding: 4px 0; font-size: 11px;">${item.quantity}</td>
         <td style="text-align:right; padding: 4px 0; font-size: 11px;">₹${item.selling_price}</td>
         <td style="text-align:right; padding: 4px 0; font-size: 11px; font-weight: bold;">₹${item.item_total}</td>
@@ -88,6 +89,7 @@ export function printThermalReceipt(invoice: Invoice, settings?: StoreSettings |
           <thead>
             <tr>
               <th style="text-align:left;">Item</th>
+              <th style="text-align:right; width: 42px;">MRP</th>
               <th style="text-align:center; width: 30px;">Qty</th>
               <th style="text-align:right; width: 45px;">Rate</th>
               <th style="text-align:right; width: 50px;">Total</th>
@@ -124,8 +126,6 @@ export function printThermalReceipt(invoice: Invoice, settings?: StoreSettings |
 
         <div class="footer-note">
           *** THANK YOU! VISIT AGAIN ***<br/>
-          Direct Factory Fresh Sivakasi Crackers<br/>
-          Burst safely with adult supervision.<br/>
           ✨ WISH YOU A HAPPY DIWALI! ✨
         </div>
       </body>

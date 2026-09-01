@@ -18,16 +18,6 @@ import { downloadOrderEstimatePDF, downloadPriceListPDF } from '../utils/pdfGene
 import { DownloadDetailsModal } from './DownloadDetailsModal';
 import { apiRequest } from '../utils/api';
 
-type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'discount-desc' | 'name-asc';
-
-const SORT_LABELS: Record<SortOption, string> = {
-  featured: 'Featured (இயல்பு வரிசை)',
-  'price-asc': 'Price: Low to High',
-  'price-desc': 'Price: High to Low',
-  'discount-desc': 'Discount: High to Low',
-  'name-asc': 'Name: A to Z',
-};
-
 interface PriceListTableProps {
   products: Product[];
   categories: Category[];
@@ -49,8 +39,6 @@ export const PriceListTable: React.FC<PriceListTableProps> = ({
   const [isInView, setIsInView] = useState(false);
   const [selectedCatId, setSelectedCatId] = useState<number | 'all'>('all');
   const [filterSearch, setFilterSearch] = useState('');
-  const [sortOption, setSortOption] = useState<SortOption>('featured');
-  const [inStockOnly, setInStockOnly] = useState(false);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [downloadSuccessToast, setDownloadSuccessToast] = useState<string | null>(null);
@@ -96,30 +84,11 @@ export const PriceListTable: React.FC<PriceListTableProps> = ({
       p.code.toLowerCase().includes(filterSearch.toLowerCase()) ||
       (p.content && p.content.toLowerCase().includes(filterSearch.toLowerCase())) ||
       (p.category_name && p.category_name.toLowerCase().includes(filterSearch.toLowerCase()));
-    const matchesStock = !inStockOnly || p.stock_quantity > 0;
-    return matchesCat && matchesSearch && matchesStock;
+    return matchesCat && matchesSearch;
   });
 
-  // Sort products (applied per-category below, but computed once here as a comparator)
-  const sortProducts = (list: Product[]): Product[] => {
-    if (sortOption === 'featured') return list;
-    const sorted = [...list];
-    switch (sortOption) {
-      case 'price-asc':
-        sorted.sort((a, b) => a.selling_price - b.selling_price);
-        break;
-      case 'price-desc':
-        sorted.sort((a, b) => b.selling_price - a.selling_price);
-        break;
-      case 'discount-desc':
-        sorted.sort((a, b) => b.discount_percentage - a.discount_percentage);
-        break;
-      case 'name-asc':
-        sorted.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-    }
-    return sorted;
-  };
+  // Keep the original product order; the Filter menu intentionally contains Category only.
+  const sortProducts = (list: Product[]): Product[] => list;
 
   // Calculate live order totals
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -333,13 +302,13 @@ export const PriceListTable: React.FC<PriceListTableProps> = ({
             )}
           </div>
 
-          {/* Filter Button (Sort + In Stock Only) */}
+          {/* Filter Button — Category only */}
           <div className="relative shrink-0">
             <button
               type="button"
               onClick={() => setShowSortMenu((v) => !v)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold border transition-colors cursor-pointer ${
-                selectedCatId !== 'all' || sortOption !== 'featured' || inStockOnly
+                selectedCatId !== 'all'
                   ? 'bg-red-700 text-white border-red-700'
                   : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
               }`}
@@ -351,72 +320,33 @@ export const PriceListTable: React.FC<PriceListTableProps> = ({
 
             {showSortMenu && (
               <>
-                {/* Backdrop to close on outside click */}
                 <div className="fixed inset-0 z-30" onClick={() => setShowSortMenu(false)} />
-                <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl border border-gray-200 shadow-xl z-40 p-3 space-y-3">
-                  <div>
-                    <div className="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1.5">
-                      Category (வகை)
-                    </div>
-                    <select
-                      value={selectedCatId}
-                      onChange={(e) => setSelectedCatId(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-xs font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-600"
-                    >
-                      <option value="all">All Categories ({products.length})</option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.name} ({products.filter((p) => p.category_id === cat.id).length})
-                        </option>
-                      ))}
-                    </select>
+                <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl border border-gray-200 shadow-xl z-40 p-3">
+                  <div className="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1.5">
+                    Category (வகை)
                   </div>
-
-                  <div className="border-t border-gray-100 pt-3">
-                    <div className="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1.5">
-                      Sort By (வரிசைப்படுத்து)
-                    </div>
-                    <div className="space-y-1">
-                      {(Object.keys(SORT_LABELS) as SortOption[]).map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => {
-                            setSortOption(opt);
-                          }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                            sortOption === opt
-                              ? 'bg-red-700 text-white'
-                              : 'text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          {SORT_LABELS[opt]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <label className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer border-t border-gray-100 pt-2.5">
-                    <input
-                      type="checkbox"
-                      checked={inStockOnly}
-                      onChange={(e) => setInStockOnly(e.target.checked)}
-                      className="w-3.5 h-3.5 accent-red-600"
-                    />
-                    <span className="text-xs font-semibold text-gray-700">In Stock Only (கையிருப்பு உள்ளவை)</span>
-                  </label>
-
-                  {(selectedCatId !== 'all' || sortOption !== 'featured' || inStockOnly) && (
+                  <select
+                    value={selectedCatId}
+                    onChange={(e) => {
+                      setSelectedCatId(e.target.value === 'all' ? 'all' : Number(e.target.value));
+                      setShowSortMenu(false);
+                    }}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-xs font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-600"
+                  >
+                    <option value="all">All Categories ({products.length})</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name} ({products.filter((p) => p.category_id === cat.id).length})
+                      </option>
+                    ))}
+                  </select>
+                  {selectedCatId !== 'all' && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setSortOption('featured');
-                        setSelectedCatId('all');
-                        setInStockOnly(false);
-                      }}
-                      className="w-full text-center text-[11px] font-bold text-red-700 hover:underline pt-1"
+                      onClick={() => { setSelectedCatId('all'); setShowSortMenu(false); }}
+                      className="w-full text-center text-[11px] font-bold text-red-700 hover:underline pt-3"
                     >
-                      Reset Filters
+                      Show All Categories
                     </button>
                   )}
                 </div>
@@ -424,8 +354,6 @@ export const PriceListTable: React.FC<PriceListTableProps> = ({
             )}
           </div>
         </div>
-
-        {/* Category selection is now inside the Filter menu for a cleaner mobile/desktop layout. */}
       </div>
 
       {/* MOBILE ACTIONS - the large sticky summary bar is intentionally removed from phone view. */}

@@ -69,12 +69,12 @@ export const translations = {
     en: 'Proprietor: R.S. Gopinath',
   },
   shopTitleFull: {
-    ta: '💥 DJ DEVARAJ CRACKERS • தேவராஜ் பட்டாசு கடை • காஞ்சிபுரம்',
-    en: '💥 DJ DEVARAJ CRACKERS • Wholesale & Retail • Kanchipuram',
+    ta: '💥 DEVARAJ CRACKERS • தேவராஜ் பட்டாசு கடை • காஞ்சிபுரம்',
+    en: '💥 DEVARAJ CRACKERS • Wholesale & Retail • Kanchipuram',
   },
   marqueeText: {
-    ta: '🎉 DJ DEVARAJ CRACKERS - தீபாவளி அதிரடி 90% வரை தள்ளுபடி விற்பனை துவங்கியது! • நேரடி சிவகாசி தரமான பசுமை பட்டாசுகள்! • வாட்ஸ்அப் ஆர்டர்: 98947 77176 / 94444 15380',
-    en: '🎉 DIWALI MEGA CRACKERS SALE UP TO 90% DISCOUNT OPEN AT DJ DEVARAJ CRACKERS! • 100% Safe Green Sivakasi Crackers • WhatsApp Order: 98947 77176',
+    ta: '🎉 DEVARAJ CRACKERS - தீபாவளி அதிரடி 90% வரை தள்ளுபடி விற்பனை துவங்கியது! • நேரடி சிவகாசி தரமான பசுமை பட்டாசுகள்! • வாட்ஸ்அப் ஆர்டர்: 98947 77176 / 94444 15380',
+    en: '🎉 DIWALI MEGA CRACKERS SALE UP TO 90% DISCOUNT OPEN AT DEVARAJ CRACKERS! • 100% Safe Green Sivakasi Crackers • WhatsApp Order: 98947 77176',
   },
 
   // Hero Section
@@ -83,8 +83,8 @@ export const translations = {
     en: 'Kanchipuram Direct Fireworks Retail & Wholesale Outlet',
   },
   shopNameHeading: {
-    ta: 'DJ DEVARAJ CRACKERS (தேவராஜ் பட்டாசு கடை)',
-    en: 'DJ DEVARAJ CRACKERS',
+    ta: 'DEVARAJ CRACKERS (தேவராஜ் பட்டாசு கடை)',
+    en: 'DEVARAJ CRACKERS',
   },
   heroHighlight: {
     ta: '✨ எங்களிடம் அனைத்து சுபநிகழ்ச்சிகளுக்கும் மொத்தமாகவும் சில்லரையாகவும் பட்டாசுகள் கிடைக்கும்!',
@@ -214,7 +214,7 @@ export const translations = {
   },
   step2Desc: {
     ta: 'உங்கள் பெயர், கைபேசி எண் மற்றும் டெலிவரி முகவரியை பதிவு செய்யுங்கள்.',
-    en: 'Fill in your name, contact mobile number, district, and street delivery address.',
+    en: 'Fill in your name, contact mobile number, city, and street delivery address.',
   },
   step3Title: {
     ta: '3. உடனடி பில் & பார்சல் டெலிவரி',
@@ -254,9 +254,9 @@ export const translations = {
     ta: 'மாநிலம் தேர்வு செய்க *',
     en: 'Select State *',
   },
-  selectDistrict: {
-    ta: 'மாவட்டம் தேர்வு செய்க *',
-    en: 'Select District *',
+  selectCity: {
+    ta: 'நகரம் தேர்வு செய்க *',
+    en: 'Select City *',
   },
   streetAddress: {
     ta: 'கதவு எண் / தெரு பெயர் *',
